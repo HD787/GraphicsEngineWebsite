@@ -24,14 +24,17 @@ webContext* initialize(int height, int width){
 
     wc->sc = createScene(1);
     wc->sc->meshes[0] = mesh0;
+    wc->sc->lightVector = malloc(sizeof(vec3)); 
+    wc->sc->lightVector->x = 0; wc->sc->lightVector->y = 0; wc->sc->lightVector->z = -1;
 
     wc->ts = malloc(sizeof(transformSpec));
     wc->ts->translateX = 0;
     wc->ts->translateY = 0;
-    wc->ts->translateZ = 5;
+    wc->ts->translateZ = 25;
     wc->ts->rotateX = 45.0;
     wc->ts->rotateY = 45.0;
     wc->ts->rotateZ = 0.0;
+    wc->ts->explodeScalar = 0.0;
     return wc;
 }
 
@@ -52,17 +55,17 @@ webContext* initializeFromObj(int height, int width){
 
     wc->sc = createScene(1);
     wc->sc->meshes[0] = mesh0;
-    //this is currently hardcoded in the transforms, take some time to fix all the demos
-    // sc->lightVector = malloc(sizeof(vec3)); 
-    // sc->lightVector->x = 0; sc->lightVector->y = 0; sc->lightVector->z = -1;
+    wc->sc->lightVector = malloc(sizeof(vec3)); 
+    wc->sc->lightVector->x = 0; wc->sc->lightVector->y = 0; wc->sc->lightVector->z = -1;
 
     wc->ts = malloc(sizeof(transformSpec));
     wc->ts->translateX = 0;
     wc->ts->translateY = 0;
-    wc->ts->translateZ = 10;
+    wc->ts->translateZ = 20;
     wc->ts->rotateX = 180.0;
     wc->ts->rotateY = -90.0;
     wc->ts->rotateZ = 0.0;
+    wc->ts->explodeScalar = 0.0;
     return wc;
 }
 

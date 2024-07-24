@@ -39,7 +39,7 @@ if (ENVIRONMENT_IS_NODE) {
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
-// include: /var/folders/ff/njg_fpgd27743s3g7cd4315w0000gn/T/tmp1hcpzv9r.js
+// include: /var/folders/ff/njg_fpgd27743s3g7cd4315w0000gn/T/tmp85hhhbyi.js
 
   if (!Module.expectedDataFileDownloads) {
     Module.expectedDataFileDownloads = 0;
@@ -219,21 +219,21 @@ var REMOTE_PACKAGE_SIZE = metadata['remote_package_size'];
 
   })();
 
-// end include: /var/folders/ff/njg_fpgd27743s3g7cd4315w0000gn/T/tmp1hcpzv9r.js
-// include: /var/folders/ff/njg_fpgd27743s3g7cd4315w0000gn/T/tmpd8yb48ce.js
+// end include: /var/folders/ff/njg_fpgd27743s3g7cd4315w0000gn/T/tmp85hhhbyi.js
+// include: /var/folders/ff/njg_fpgd27743s3g7cd4315w0000gn/T/tmp_x2wsy0x.js
 
     // All the pre-js content up to here must remain later on, we need to run
     // it.
     if (Module['$ww'] || (typeof ENVIRONMENT_IS_PTHREAD != 'undefined' && ENVIRONMENT_IS_PTHREAD)) Module['preRun'] = [];
     var necessaryPreJSTasks = Module['preRun'].slice();
-  // end include: /var/folders/ff/njg_fpgd27743s3g7cd4315w0000gn/T/tmpd8yb48ce.js
-// include: /var/folders/ff/njg_fpgd27743s3g7cd4315w0000gn/T/tmpv0jftguz.js
+  // end include: /var/folders/ff/njg_fpgd27743s3g7cd4315w0000gn/T/tmp_x2wsy0x.js
+// include: /var/folders/ff/njg_fpgd27743s3g7cd4315w0000gn/T/tmps0_chyw3.js
 
     if (!Module['preRun']) throw 'Module.preRun should exist because file support used it; did a pre-js delete it?';
     necessaryPreJSTasks.forEach((task) => {
       if (Module['preRun'].indexOf(task) < 0) throw 'All preRun tasks that exist before user pre-js code should remain after; did you replace Module or modify Module.preRun?';
     });
-  // end include: /var/folders/ff/njg_fpgd27743s3g7cd4315w0000gn/T/tmpv0jftguz.js
+  // end include: /var/folders/ff/njg_fpgd27743s3g7cd4315w0000gn/T/tmps0_chyw3.js
 
 
 // Sometimes an existing Module object exists with properties
@@ -4363,9 +4363,10 @@ var wasmExports = createWasm();
 var ___wasm_call_ctors = createExportWrapper('__wasm_call_ctors', 0);
 var _initialize = Module['_initialize'] = createExportWrapper('initialize', 2);
 var _initializeFromObj = Module['_initializeFromObj'] = createExportWrapper('initializeFromObj', 2);
-var _deleteWebContext = Module['_deleteWebContext'] = createExportWrapper('deleteWebContext', 1);
 var _renderPass = Module['_renderPass'] = createExportWrapper('renderPass', 7);
+var _renderWireFrame = Module['_renderWireFrame'] = createExportWrapper('renderWireFrame', 1);
 var _getFrameBuffer = Module['_getFrameBuffer'] = createExportWrapper('getFrameBuffer', 1);
+var _deleteWebContext = Module['_deleteWebContext'] = createExportWrapper('deleteWebContext', 1);
 var _misc = Module['_misc'] = createExportWrapper('misc', 1);
 var _fflush = createExportWrapper('fflush', 1);
 var _emscripten_stack_init = () => (_emscripten_stack_init = wasmExports['emscripten_stack_init'])();

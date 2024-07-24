@@ -3,7 +3,6 @@
 //this could be quite restrictive
 void transform(renderContext* rc, transformSpec* ts, scene* sc, vertexBuffer* vb, colorBuffer* cb, normalBuffer* nb){
     matrix4x4 rotationMatrixX, rotationMatrixY, rotationMatrixZ, translationMatrix, scalingMatrix, perspectiveProjectionMatrix, screenSpaceMatrix;
-    vec3 light; light.x = 0; light.y = 0; light.z = -1.0;
     createRotationMatrixX(ts->rotateX, rotationMatrixX);
     createRotationMatrixY(ts->rotateY, rotationMatrixY);
     createRotationMatrixZ(ts->rotateZ, rotationMatrixZ);
@@ -23,6 +22,8 @@ void transform(renderContext* rc, transformSpec* ts, scene* sc, vertexBuffer* vb
         normTemp.z = nb->normals[i + 2];
 
         vec4 normTempH = homogenizeVector(normTemp);
+
+        temp = addVectors(temp, normTempH);
         
         vecByMatrix4x4(&temp, rotationMatrixX);
         
@@ -39,7 +40,7 @@ void transform(renderContext* rc, transformSpec* ts, scene* sc, vertexBuffer* vb
 
         normTemp = dehomogenizeVector(normTempH);
         normalizeVector(&normTemp);
-        float lightScalar = dotProduct(normTemp, light);
+        float lightScalar = dotProduct(normTemp, *sc->lightVector);
         //printf("%f, %f, %f\n", normTemp.x, normTemp.y, normTemp.z);
         //printf("%f\n", lightScalar);
         lightScalar += 1;
