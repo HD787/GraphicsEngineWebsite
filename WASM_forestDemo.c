@@ -30,11 +30,11 @@ webContext* initialize(int height, int width){
     wc->ts = malloc(sizeof(transformSpec));
     wc->ts->translateX = 0;
     wc->ts->translateY = 0;
-    wc->ts->translateZ = 25;
+    wc->ts->translateZ = 5;
     wc->ts->rotateX = 45.0;
     wc->ts->rotateY = 45.0;
     wc->ts->rotateZ = 0.0;
-    wc->ts->explodeScalar = 0.0;
+    wc->ts->explodeScalar = 1.0;
     return wc;
 }
 
@@ -61,11 +61,11 @@ webContext* initializeFromObj(int height, int width){
     wc->ts = malloc(sizeof(transformSpec));
     wc->ts->translateX = 0;
     wc->ts->translateY = 0;
-    wc->ts->translateZ = 20;
+    wc->ts->translateZ = 10;
     wc->ts->rotateX = 180.0;
     wc->ts->rotateY = -90.0;
     wc->ts->rotateZ = 0.0;
-    wc->ts->explodeScalar = 0.0;
+    wc->ts->explodeScalar = 1.0;
     return wc;
 }
 
