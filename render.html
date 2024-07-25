@@ -81,10 +81,14 @@
                 <h2>Rasterization</h2>
                 <div>
                     <h3>Lighting Vector</h3>
-                    <input>
-                    <input>
-                    <input>
-                    <button>Update Vector</button>
+                    <input id="x">
+                    <input id="y">
+                    <input id="z">
+                    <button onClick="submitNewLightVector(
+                        document.getElementById('x').value,
+                        document.getElementById('y').value,
+                        document.getElementById('z').value)">
+                        Update Vector</button>
                 </div>
                 <div>
                     <h3>RGB values</h3>
@@ -92,7 +96,7 @@
                     <input id="g">
                     <input id="b">
                     <button 
-                        onClick="submitNewColor(wcPtr, 
+                        onClick="submitNewColor( 
                         document.getElementById('r').value,
                         document.getElementById('g').value, 
                         document.getElementById('b').value)">
@@ -128,6 +132,7 @@
             renderWireFrame = Module._renderWireFrame;
             updateExplodeScalar = Module._updateExplodeScalar;
             updateColorBuffer = Module._updateColorBuffer;
+            updateLightVector = Module._updateLightVector;
             //const misc = Module._misc;
 
             wcPtr = initialize(canvas.width, canvas.height);

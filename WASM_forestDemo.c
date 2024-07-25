@@ -1,4 +1,4 @@
-//emcc -o WASM_forestDemo.js WASM_forestDemo.c -s EXPORTED_FUNCTIONS='["_initialize", "_renderPass", "_getFrameBuffer", "_deleteWebContext", "_initializeFromObj", "_renderWireFrame", "_updateExplodeScalar", "_updateColorBuffer", "_initializeUtahTeapot", "_misc"]' -s --preload-file forestPondFIXED.obj
+//emcc -o WASM_forestDemo.js WASM_forestDemo.c -s EXPORTED_FUNCTIONS='["_initialize", "_renderPass", "_getFrameBuffer", "_deleteWebContext", "_initializeFromObj", "_renderWireFrame", "_updateExplodeScalar", "_updateColorBuffer", "_updateLightVector", "_initializeUtahTeapot", "_misc"]' -s --preload-file forestPondFIXED.obj
 #include <string.h>
 #include <emscripten.h>
 #include "GraphicsEngine/raster/rasterizer.c"
@@ -130,6 +130,14 @@ void updateColorBuffer(webContext* wc, unsigned char r, unsigned char g, unsigne
         wc->sc->meshes[0]->cb->inputColors[i + 1] = g;
         wc->sc->meshes[0]->cb->inputColors[i + 2] = b;
     }
+}
+
+EMSCRIPTEN_KEEPALIVE
+void updateLightVector(webContext* wc, float x, float y, float z){
+    wc->sc->lightVector->x = x;
+    wc->sc->lightVector->y = y;
+    wc->sc->lightVector->z = z;
+    normalizeVector(wc->sc->lightVector);
 }
 
 EMSCRIPTEN_KEEPALIVE

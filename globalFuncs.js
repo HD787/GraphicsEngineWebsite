@@ -66,9 +66,17 @@ function submitNewColor(r, g, b){
     ctx.putImageData(imageData, 0, 0);
 }
 
+function submitNewLightVector(x, y, z){
+    updateLightVector(wcPtr, x, y, z)
+    renderPass(wcPtr, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+    ctx.putImageData(imageData, 0, 0);
+}
+
 function clampUnsignedChar(value){
     if(value > 255) return 255;
     if(value < 0) return 0;
     return value;
 }
+
+
 
