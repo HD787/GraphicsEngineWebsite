@@ -42,11 +42,33 @@ function transform(){
 }
 
 function changeMenus(){
-    const menuIds = ["controls", "transforms", "colors", "explodeModel"];
+    const menuIds = ["controls", "transforms", "rasterization"];
     menuIds.forEach(id => {
         document.getElementById(id).classList.add("hidden");
     });
     console.log(this.target);
     document.getElementById(this.dataset.target).classList.remove("hidden");
-    // document.querySelector(this.target).classList.remove("hidden");
 }
+
+function submitNewExplodeScalar(scalar){
+    updateExplodeScalar(wcPtr, scalar);
+    renderPass(wcPtr, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+    ctx.putImageData(imageData, 0, 0);
+    document.getElementById("explodeScalarValue").textContent = scalar.toString();
+}
+
+function submitNewColor(r, g, b){
+    r = clampUnsignedChar(r);
+    g = clampUnsignedChar(g);
+    b = clampUnsignedChar(b);
+    updateColorBuffer(wcPtr, r, g, b);
+    renderPass(wcPtr, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+    ctx.putImageData(imageData, 0, 0);
+}
+
+function clampUnsignedChar(value){
+    if(value > 255) return 255;
+    if(value < 0) return 0;
+    return value;
+}
+

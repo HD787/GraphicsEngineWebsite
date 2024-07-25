@@ -1,4 +1,4 @@
-//emcc -o WASM_forestDemo.js WASM_forestDemo.c -s EXPORTED_FUNCTIONS='["_initialize", "_renderPass", "_getFrameBuffer", "_deleteWebContext", "_initializeFromObj", "_renderWireFrame", "_misc"]' -s --preload-file forestPondFIXED.obj
+//emcc -o WASM_forestDemo.js WASM_forestDemo.c -s EXPORTED_FUNCTIONS='["_initialize", "_renderPass", "_getFrameBuffer", "_deleteWebContext", "_initializeFromObj", "_renderWireFrame", "_updateExplodeScalar", "_updateColorBuffer", "_initializeUtahTeapot", "_misc"]' -s --preload-file forestPondFIXED.obj
 #include <string.h>
 #include <emscripten.h>
 #include "GraphicsEngine/raster/rasterizer.c"
@@ -7,6 +7,7 @@
 #include "GraphicsEngine/graphicsEngineFunctions.c"
 #include "WASM_transforms.c"
 #include "commonCoords.c"
+#include "utahTeapot.c"
 #include "GraphicsEngine/OBJParser/parser.c"
 
 
@@ -34,7 +35,35 @@ webContext* initialize(int height, int width){
     wc->ts->rotateX = 45.0;
     wc->ts->rotateY = 45.0;
     wc->ts->rotateZ = 0.0;
-    wc->ts->explodeScalar = 1.0;
+    wc->ts->explodeScalar = 0.0;
+    return wc;
+}
+
+EMSCRIPTEN_KEEPALIVE
+webContext* initializeUtahTeapot(int height, int width){
+    webContext* wc = malloc(sizeof(webContext));
+    wc->rc = createRenderContext_RGBA(height, width);
+
+    vertexBuffer* vb0 = createVertexBuffer(58440);
+    memcpy(vb0->inputVertices, utahTeapot, sizeof(float) * 58440);
+    normalBuffer* nb0 = generateNormals(vb0);
+    colorBuffer* cb0 = createColorBuffer(58440);
+    for(int i = 0; i < cb0->length; i++) cb0->inputColors[i] = 127;
+    mesh* mesh0 = meshify(vb0, cb0, nb0);
+
+    wc->sc = createScene(1);
+    wc->sc->meshes[0] = mesh0;
+    wc->sc->lightVector = malloc(sizeof(vec3)); 
+    wc->sc->lightVector->x = 0; wc->sc->lightVector->y = 0; wc->sc->lightVector->z = -1;
+
+    wc->ts = malloc(sizeof(transformSpec));
+    wc->ts->translateX = 0;
+    wc->ts->translateY = 0;
+    wc->ts->translateZ = 5;
+    wc->ts->rotateX = 45.0;
+    wc->ts->rotateY = 45.0;
+    wc->ts->rotateZ = 0.0;
+    wc->ts->explodeScalar = 0.0;
     return wc;
 }
 
@@ -65,7 +94,7 @@ webContext* initializeFromObj(int height, int width){
     wc->ts->rotateX = 180.0;
     wc->ts->rotateY = -90.0;
     wc->ts->rotateZ = 0.0;
-    wc->ts->explodeScalar = 1.0;
+    wc->ts->explodeScalar = 0.0;
     return wc;
 }
 
@@ -89,6 +118,19 @@ void renderWireFrame(webContext* wc){
    rasterizeNoScanline_RGBA(wc->rc, wc->sc->meshes[0]->vb, wc->sc->meshes[0]->cb); 
 }
 
+EMSCRIPTEN_KEEPALIVE
+void updateExplodeScalar(webContext* wc, float scalar){
+    wc->ts->explodeScalar = scalar;
+}
+
+EMSCRIPTEN_KEEPALIVE
+void updateColorBuffer(webContext* wc, unsigned char r, unsigned char g, unsigned char b){
+    for(int i = 0; i < wc->sc->meshes[0]->vb->length; i += 3){
+        wc->sc->meshes[0]->cb->inputColors[i] = r;
+        wc->sc->meshes[0]->cb->inputColors[i + 1] = g;
+        wc->sc->meshes[0]->cb->inputColors[i + 2] = b;
+    }
+}
 
 EMSCRIPTEN_KEEPALIVE
 uint8_t* getFrameBuffer(webContext* wc){
@@ -102,6 +144,11 @@ void deleteWebContext(webContext* wc){
     deleteScene(wc->sc);
     free(wc->ts);
     free(wc);
+}
+
+EMSCRIPTEN_KEEPALIVE
+void addMatrix(webContext* wc, matrix4x4 matrix){
+
 }
 
 //for debugging purposes

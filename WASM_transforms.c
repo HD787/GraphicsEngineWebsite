@@ -22,8 +22,9 @@ void transform(renderContext* rc, transformSpec* ts, scene* sc, vertexBuffer* vb
         normTemp.z = nb->normals[i + 2];
 
         vec4 normTempH = homogenizeVector(normTemp);
-
+        // vec4 zeroVec; zeroVec.x = 0; zeroVec.y = 0; zeroVec.z = 0; zeroVec.w = 0;
         temp = addVectors(temp, scaleVector(normTempH, ts->explodeScalar));
+        // temp = addVectors(temp, zeroVec);
         
         vecByMatrix4x4(&temp, rotationMatrixX);
         
