@@ -36,6 +36,10 @@ void transform(renderContext* rc, transformSpec* ts, scene* sc, vertexBuffer* vb
         vecByMatrix4x4(&normTempH, rotationMatrixZ);
         
         vecByMatrix4x4(&temp, translationMatrix);
+
+        for(int i = 0; i < ts->matrixArrayLength; i += 16){
+            vecByMatrix4x4(&temp, &ts->matrixArray[i]);
+        }
         
         perspectiveProjection(&temp, perspectiveProjectionMatrix);
 

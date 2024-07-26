@@ -1,4 +1,4 @@
-//emcc -o WASM_forestDemo.js WASM_forestDemo.c -s EXPORTED_FUNCTIONS='["_initialize", "_renderPass", "_getFrameBuffer", "_deleteWebContext", "_initializeFromObj", "_renderWireFrame", "_updateExplodeScalar", "_updateColorBuffer", "_updateLightVector", "_initializeUtahTeapot", "_misc"]' -s --preload-file forestPondFIXED.obj
+//emcc -o WASM_forestDemo.js WASM_forestDemo.c -s EXPORTED_FUNCTIONS='["_initialize", "_renderPass", "_getFrameBuffer", "_deleteWebContext", "_initializeFromObj", "_renderPassWireFrame", "_updateExplodeScalar", "_updateColorBuffer", "_updateLightVector", "_addMatrixValue", "_addMatrixSlot", "_misc"]' -s --preload-file forestPondFIXED.obj
 #include <string.h>
 #include <emscripten.h>
 #include "GraphicsEngine/raster/rasterizer.c"
@@ -36,36 +36,11 @@ webContext* initialize(int height, int width){
     wc->ts->rotateY = 45.0;
     wc->ts->rotateZ = 0.0;
     wc->ts->explodeScalar = 0.0;
+    wc->ts->matrixArrayLength = 0;
+    wc->ts->matrixArray = NULL;
     return wc;
 }
 
-EMSCRIPTEN_KEEPALIVE
-webContext* initializeUtahTeapot(int height, int width){
-    webContext* wc = malloc(sizeof(webContext));
-    wc->rc = createRenderContext_RGBA(height, width);
-
-    vertexBuffer* vb0 = createVertexBuffer(58440);
-    memcpy(vb0->inputVertices, utahTeapot, sizeof(float) * 58440);
-    normalBuffer* nb0 = generateNormals(vb0);
-    colorBuffer* cb0 = createColorBuffer(58440);
-    for(int i = 0; i < cb0->length; i++) cb0->inputColors[i] = 127;
-    mesh* mesh0 = meshify(vb0, cb0, nb0);
-
-    wc->sc = createScene(1);
-    wc->sc->meshes[0] = mesh0;
-    wc->sc->lightVector = malloc(sizeof(vec3)); 
-    wc->sc->lightVector->x = 0; wc->sc->lightVector->y = 0; wc->sc->lightVector->z = -1;
-
-    wc->ts = malloc(sizeof(transformSpec));
-    wc->ts->translateX = 0;
-    wc->ts->translateY = 0;
-    wc->ts->translateZ = 5;
-    wc->ts->rotateX = 45.0;
-    wc->ts->rotateY = 45.0;
-    wc->ts->rotateZ = 0.0;
-    wc->ts->explodeScalar = 0.0;
-    return wc;
-}
 
 EMSCRIPTEN_KEEPALIVE
 webContext* initializeFromObj(int height, int width){
@@ -89,12 +64,14 @@ webContext* initializeFromObj(int height, int width){
 
     wc->ts = malloc(sizeof(transformSpec));
     wc->ts->translateX = 0;
-    wc->ts->translateY = 0;
+    wc->ts->translateY = 2;
     wc->ts->translateZ = 10;
     wc->ts->rotateX = 180.0;
     wc->ts->rotateY = -90.0;
     wc->ts->rotateZ = 0.0;
     wc->ts->explodeScalar = 0.0;
+    wc->ts->matrixArrayLength = 0;
+    wc->ts->matrixArray = NULL;
     return wc;
 }
 
@@ -114,8 +91,16 @@ void renderPass(webContext* wc, float translateX, float translateY, float transl
 }
 
 EMSCRIPTEN_KEEPALIVE
-void renderWireFrame(webContext* wc){
-   rasterizeNoScanline_RGBA(wc->rc, wc->sc->meshes[0]->vb, wc->sc->meshes[0]->cb); 
+void renderPassWireFrame(webContext* wc, float translateX, float translateY, float translateZ, float rotateX, float rotateY, float rotateZ){
+    cleanRenderContext_RGBA(wc->rc);
+    wc->ts->translateX += translateX;
+    wc->ts->translateY += translateY;
+    wc->ts->translateZ += translateZ;
+    wc->ts->rotateX += rotateX;
+    wc->ts->rotateY += rotateY;
+    wc->ts->rotateZ += rotateZ;
+    transform(wc->rc, wc->ts, wc->sc, wc->sc->meshes[0]->vb, wc->sc->meshes[0]->cb, wc->sc->meshes[0]->nb);
+    rasterizeNoScanline_RGBA(wc->rc, wc->sc->meshes[0]->vb, wc->sc->meshes[0]->cb); 
 }
 
 EMSCRIPTEN_KEEPALIVE
@@ -155,8 +140,15 @@ void deleteWebContext(webContext* wc){
 }
 
 EMSCRIPTEN_KEEPALIVE
-void addMatrix(webContext* wc, matrix4x4 matrix){
+void addMatrixSlot(webContext* wc){
+    float* new = realloc(wc->ts->matrixArray, sizeof(float) * (wc->ts->matrixArrayLength + 16));
+     wc->ts->matrixArray = new;
+}
 
+EMSCRIPTEN_KEEPALIVE
+void addMatrixValue(webContext* wc, float newVal){
+    wc->ts->matrixArray[wc->ts->matrixArrayLength] = newVal;
+    wc->ts->matrixArrayLength++;
 }
 
 //for debugging purposes

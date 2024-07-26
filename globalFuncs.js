@@ -37,8 +37,14 @@ function transform(){
     if (keyStates['KeyH']){
         rz -= 1.0;
     }
-    renderPass(wcPtr, tx, ty, tz, rx, ry, rz);
-    ctx.putImageData(imageData, 0, 0);
+    if(renderMode === 1){
+        renderPassWireFrame(wcPtr, tx, ty, tz, rx, ry, rz);
+        ctx.putImageData(imageData, 0, 0);
+    }
+    else if(renderMode === 0){
+        renderPass(wcPtr, tx, ty, tz, rx, ry, rz);
+        ctx.putImageData(imageData, 0, 0);
+    }
 }
 
 function changeMenus(){
@@ -46,14 +52,12 @@ function changeMenus(){
     menuIds.forEach(id => {
         document.getElementById(id).classList.add("hidden");
     });
-    console.log(this.target);
     document.getElementById(this.dataset.target).classList.remove("hidden");
 }
 
 function submitNewExplodeScalar(scalar){
     updateExplodeScalar(wcPtr, scalar);
-    renderPass(wcPtr, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-    ctx.putImageData(imageData, 0, 0);
+    render();
     document.getElementById("explodeScalarValue").textContent = scalar.toString();
 }
 
@@ -62,20 +66,53 @@ function submitNewColor(r, g, b){
     g = clampUnsignedChar(g);
     b = clampUnsignedChar(b);
     updateColorBuffer(wcPtr, r, g, b);
-    renderPass(wcPtr, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-    ctx.putImageData(imageData, 0, 0);
+    render();
 }
 
 function submitNewLightVector(x, y, z){
     updateLightVector(wcPtr, x, y, z)
-    renderPass(wcPtr, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-    ctx.putImageData(imageData, 0, 0);
+    render();
+}
+
+function submitNewMatrix(){
+    const matrixInputs = document.querySelectorAll('#matrixInput input[type="number"]');
+    const matrix = Array.from(matrixInputs).map(input => parseFloat(input.value));
+    addMatrixSlot(wcPtr)
+    for(i = 0; i < 16; i++){
+       addMatrixValue(wcPtr, matrix[i]);
+    }
+    render();
 }
 
 function clampUnsignedChar(value){
     if(value > 255) return 255;
     if(value < 0) return 0;
     return value;
+}
+
+function changeRenderMode(){
+    if(renderMode == 0){
+        renderMode = 1;
+        document.getElementById("renderWireFrame").innerText = "Enable Scanline"
+        render()
+        return;
+    }
+    if(renderMode == 1){
+        renderMode = 0;
+        document.getElementById("renderWireFrame").innerText = "Disable Scanline"
+    }
+    render();
+}
+
+function render(){
+    if(renderMode === 1){
+        console.log('here');
+        renderPassWireFrame(wcPtr, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        ctx.putImageData(imageData, 0, 0);
+        return;
+    }
+    renderPass(wcPtr, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+    ctx.putImageData(imageData, 0, 0);
 }
 
 
