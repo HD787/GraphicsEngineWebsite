@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<h1>Computational Efficiency of Matrices</h1>
+<pre>
+    Note: this article has pretty much nothing to do with the graphics engine demo.
+
+    It is true that matrices introduce lots of operations, many of which are inconsequential, and 
+    it begs the question on whether the consistency in approach they offer is worth it compared to 
+    using alternatives, such as deconstructing them to essential operations or something like quaternions.
+    Here I will analyze whether clang, the compiler used in this demo can effectively reduce the amount of operations
+    used in its output, which will be in ARM64.
+
+    To demonstrate this idea i've prepared this sample code to demonstrate the compilers ability to optimize.
+    <code>
+        int main(){
+            volatile float matrix[16];
+            volatile float v1 = 5.0;
+            volatile float v2 = 6.0;
+            volatile float v3 = 7.0;
+            volatile float v4 = 8.0;
+        
+            matrix[0] = 1.0f;    matrix[1] = 0.0f;   matrix[2] = 0.0f;    matrix[3] = 2.0;
+            matrix[4] = 0.0f;    matrix[5] = 1.0f;   matrix[6] = 0.0f;    matrix[7] = 3.0;
+            matrix[8] = 0.0f;    matrix[9] = 0.0f;   matrix[10] = 1.0f;   matrix[11] = 4.0;
+            matrix[12] = 0.0f;   matrix[13] = 0.0f;  matrix[14] = 0.0f;   matrix[15] = 1.0f;
+            volatile float x = v1 * matrix[0] + v2 * matrix[1] + v3 * matrix[2] + v4 * matrix[3];
+            volatile float y = v1 * matrix[4] + v2 * matrix[5] + v3 * matrix[6] + v4 * matrix[7];
+            volatile float z = v1 * matrix[8] + v2 * matrix[9] + v3 * matrix[10] + v4 * matrix[11];
+            volatile float w = v1 * matrix[12] + v2 * matrix[13] + v3 * matrix[14] + v4 * matrix[15];
+            volatile float xr = x;
+            volatile float xy = y;
+            volatile float xz = z;
+            volatile float xw = w;
+        }
+    </code>
+
+    This shows a simple translation matrix by vector multiplication, different values are used to prevent the
+    compiler from overfitting this code and reusing values in a way that wouldn't be realistic, also the volatile
+    keyword prevents the compiler from deleting code it deems unecessary, in the highest optimization setting 
+    Clang would determine none of this code is important and delete it all, which is funny.
+
+    this first program was built like so: "clang -S matrixAsm.c -o matrixAsm.s" no optimization setting defaults
+    to -O0
+
+    my annotions will be all caps to differentiate from clang's
+
+    <code>
+        .section	__TEXT,__text,regular,pure_instructions
+        .build_version macos, 14, 0	sdk_version 14, 5
+        .globl	_main                           ; -- Begin function main
+        .p2align	2
+    _main:                                  ; @main
+        .cfi_startproc
+    ; %bb.0:
+        sub	sp, sp, #144 ;144 BYTES ALLOCATED TO THE STACK
+        .cfi_def_cfa_offset 144
+        stp	x29, x30, [sp, #128]            ; 16-byte Folded Spill
+        add	x29, sp, #128
+        .cfi_def_cfa w29, 16
+        .cfi_offset w30, -8
+        .cfi_offset w29, -16
+        adrp	x8, ___stack_chk_guard@GOTPAGE
+        ldr	x8, [x8, ___stack_chk_guard@GOTPAGEOFF]
+        ldr	x8, [x8]
+        stur	x8, [x29, #-8]
+        fmov	s0, #5.00000000             ;CLANG STARTS BY PLACING THE VECTOR VALUES NEXT TO EACH OTHER ON 
+        str	s0, [sp, #52]                   ;THE STACK
+        fmov	s0, #6.00000000
+        str	s0, [sp, #48]
+        fmov	s0, #7.00000000
+        str	s0, [sp, #44]
+        fmov	s0, #8.00000000
+        str	s0, [sp, #40]
+        fmov	s0, #1.00000000             ;FP REGISTER 0 WILL HOLD THE VALUE 1.0 AND PLACE IT ACCORDINGLY
+        ;THE 1.0 VALUES REPRESENT THE LOCATIONS IN THE MATRIX THAT WOULD MAKE AN IDENTITY MATRIX
+        ;WHICH FORM A DIAGONAL FROM THE TOP LEFT TO BOTTOM RIGHT
+        str	s0, [sp, #56]                   
+        movi	d1, #0000000000000000       ;USE FP REGISTER 1 FOR THE VALUE 0.0 AND PLACE IT ACCORDINGLY
+        ;WEIRDLY IT IS USING 64 BITS FOR THIS, NOT SURE WHY, PROBABLY SOMETHING TO DO WITH THE VALUE 0
+        str	s1, [sp, #4]                    ; 4-byte Folded Spill
+        str	s1, [sp, #60]                   ;ALL OF THESE S1 OPERATIONS ARE STORING 0.0 IN SOME OFFSET
+        str	s1, [sp, #64]
+        fmov	s2, #2.00000000             ;THIS IS THE X TRANSLATION VALUE IN FP REGISTER 2
+        ;CONVENIENTLY CLANG IS GOING TO USE FP REGISTER 2 FOR ALL TRANSLATION VALUES
+        str	s2, [sp, #68]
+        str	s1, [sp, #72]
+        str	s0, [sp, #76]                   
+        str	s1, [sp, #80]
+        fmov	s2, #3.00000000             ;THIS IS THE Y TRANSLATION VALUE IN FP REGISTER 2
+        str	s2, [sp, #84]
+        str	s1, [sp, #88]
+        str	s1, [sp, #92]
+        str	s0, [sp, #96]                   
+        fmov	s2, #4.00000000             ;THIS IS THE Z TRANSLATION VALUE IN FP REGISTER 2
+        str	s2, [sp, #100]
+        str	s1, [sp, #104]
+        str	s1, [sp, #108]
+        str	s1, [sp, #112]
+        str	s0, [sp, #116]
+        ;THIS IS THE END OF STORING THE VALUES, CLANG DECIDED TO STORE ALL 16 MATRIX VALUES AS WELL AS ALL 4 VECTOR VALUES
+        ldr	s0, [sp, #52] ;OFFSET 52 HOLDS 5.0
+        ldr	s1, [sp, #56] ;OFFSET 56 HOLDS 1.0
+        ldr	s2, [sp, #48] ;OFFSET 48 HOLDS 6.0
+        ldr	s3, [sp, #60] ;OFFSET 60 HOLDS 0.0
+        fmul	s2, s2, s3 ;MULTIPLY 6.0 * 0.0 AND STORE VALUE IN FP REGISTER 2
+        fmadd	s2, s0, s1, s2; THIS IS SAYING (5.0 * 1.O) + 0.0 AND STORE IN REGISTER 2
+        ;VALUE IN FP REGISTER 2 = 5.0
+        ldr	s0, [sp, #44] ;OFFSET 44 HOLDS 7.0
+        ldr	s1, [sp, #64] ;OFFSET 64 HOLDS 0.0
+        fmadd	s2, s0, s1, s2; (7.0 * 0.0) + 5.0 STORE IN FP REGISTER 2
+        ;REGISTER 2 HOLDS 5.0
+        ldr	s0, [sp, #40] ;OFFSET 40 HOLDS 8.0
+        ldr	s1, [sp, #68] ;OFFSET 68 HOLDS 2.0
+        fmadd	s0, s0, s1, s2 ; (8.0 * 2.0) + 5.0 STORE IN FP REGISTER 0
+        ;REGISTER 0 HOLDS VALUE 21
+        ;THIS IS COMPLETES THE FIRST ROW OF THE MATRIX
+        str	s0, [sp, #36]
+        ;THE RESULT IS STORED IN OFFSET 36
+        ;THE PATTERN CONTINUE FOR THE REST OF THE ROWS
+        ;IM NOT GONNA ANNOTATE ALL THAT LOL
+        ldr	s0, [sp, #52]
+        ldr	s1, [sp, #72]
+        ldr	s2, [sp, #48]
+        ldr	s3, [sp, #76]
+        fmul	s2, s2, s3
+        fmadd	s2, s0, s1, s2
+        ldr	s0, [sp, #44]
+        ldr	s1, [sp, #80]
+        fmadd	s2, s0, s1, s2
+        ldr	s0, [sp, #40]
+        ldr	s1, [sp, #84]
+        fmadd	s0, s0, s1, s2
+        str	s0, [sp, #32]   ;THE NEXT RESULT IS STORED IN OFFSET 32
+        ldr	s0, [sp, #52]
+        ldr	s1, [sp, #88]
+        ldr	s2, [sp, #48]
+        ldr	s3, [sp, #92]
+        fmul	s2, s2, s3
+        fmadd	s2, s0, s1, s2
+        ldr	s0, [sp, #44]
+        ldr	s1, [sp, #96]
+        fmadd	s2, s0, s1, s2
+        ldr	s0, [sp, #40]
+        ldr	s1, [sp, #100]
+        fmadd	s0, s0, s1, s2
+        str	s0, [sp, #28] ;ANOTHER RESULT STORED IN OFFSET 28
+        ldr	s0, [sp, #52]
+        ldr	s1, [sp, #104]
+        ldr	s2, [sp, #48]
+        ldr	s3, [sp, #108]
+        fmul	s2, s2, s3
+        fmadd	s2, s0, s1, s2
+        ldr	s0, [sp, #44]
+        ldr	s1, [sp, #112]
+        fmadd	s2, s0, s1, s2
+        ldr	s0, [sp, #40]
+        ldr	s1, [sp, #116]
+        fmadd	s0, s0, s1, s2
+        str	s0, [sp, #24] ;THE LAST RESULT STORED IN OFFSET 24
+        ;ALL RESULTS ARE RIGHT NEXT TO EACHOTHER WHICH IS NICE
+        ldr	s0, [sp, #36] ;THE NEXT 8 LINES MOVE OUR RESULTS FROM OFFSETS 36-24 TO 20-8, NOT SURE WHY
+        str	s0, [sp, #20]
+        ldr	s0, [sp, #32]
+        str	s0, [sp, #16]
+        ldr	s0, [sp, #28]
+        str	s0, [sp, #12]
+        ldr	s0, [sp, #24]
+        str	s0, [sp, #8]
+        ;THIS CONCLUDES THE IMPORTANT PART OF OUR PROGRAM
+        ldur	x9, [x29, #-8]
+        adrp	x8, ___stack_chk_guard@GOTPAGE
+        ldr	x8, [x8, ___stack_chk_guard@GOTPAGEOFF]
+        ldr	x8, [x8]
+        subs	x8, x8, x9
+        cset	w8, eq
+        tbnz	w8, #0, LBB0_2
+        b	LBB0_1
+    LBB0_1:
+        bl	___stack_chk_fail
+    LBB0_2:
+        mov	w0, #0
+        ldp	x29, x30, [sp, #128]            ; 16-byte Folded Reload
+        add	sp, sp, #144
+        ret
+        .cfi_endproc
+                                            ; -- End function
+    .subsections_via_symbols
+    
+    </code>
+
+    as we can see the Clang with no optimizations pretty faithfully generated our code, lots of redundant operations. 
+    
+    Next is the code generated with this command: "clang -S matrixAsm.c -o matrixAsm3.s -O3" which signifies maximum
+    optimization, also it encourages the use of SIMD if it can figure out how to do so.
+
+    <code>
+        .section	__TEXT,__text,regular,pure_instructions
+        .build_version macos, 14, 0	sdk_version 14, 5
+        .globl	_main                           ; -- Begin function main
+        .p2align	2
+    _main:                                  ; @main
+        .cfi_startproc
+    ; %bb.0:
+        sub	sp, sp, #96 ;THE LAST CODE ALLOCATED 144 BYTES TO THE STACK SO ALREADY WE CAN SEE IT CUT OUT SOME STUFF
+        .cfi_def_cfa_offset 96
+        mov	w8, #1084227584 ; RIGHT OFF THE BAT WE ARE NOW USING GENERAL PURPOSE REGISTERS INSTEAD OF FLOATING POINT/SIMD REGISTERS
+        ;THAT WEIRD NUMBER IS 5.0 IF ITS BINARY WERE TO BE INTERPRETED AS A DECIMAL INTEGER, PRETTY COOL RIGHT
+        str	w8, [sp, #28]
+        mov	w8, #1086324736 ;THIS IS 6.0 
+        str	w8, [sp, #24]
+        mov	w8, #1088421888 ;THIS IS 7.0
+        str	w8, [sp, #20]
+        mov	w8, #1090519040 ;THIS IS 8.0
+        str	w8, [sp, #16]
+        ;THE str COMMANDS TELL US THESE VALUES WERE STORED IN OFFSETS 16 =28
+        mov	w8, #1065353216 ;THIS IS 1.0
+        str	w8, [sp, #92]
+        str	wzr, [sp, #88] ;wzr IS THE ZERO REGISTER, IT IS A SPECIAL REGISTER THAT DOESNT ACTUALLY HAVE ANY WIDTH
+        ;IT IS JUST TO BE INTERPRETED AS ZERO, PERHAPS THIS IS THE REASON WE ARE USING THE INTEGER REGISTERS
+        str	wzr, [sp, #84]
+        mov	w9, #1073741824 ;THIS IS 2.0
+        str	w9, [sp, #80]
+        str	wzr, [sp, #76]
+        str	w8, [sp, #72]
+        str	wzr, [sp, #68]
+        mov	w9, #1077936128 ;THIS IS 3.O
+        str	w9, [sp, #64]
+        str	wzr, [sp, #60]
+        str	wzr, [sp, #56]
+        str	w8, [sp, #52]
+        mov	w9, #1082130432 ;THIS IS 4.0
+        str	w9, [sp, #48]
+        str	wzr, [sp, #44]
+        str	wzr, [sp, #40]
+        str	wzr, [sp, #36]
+        str	w8, [sp, #32]
+        ;THE PREVIOUS 16 str OPERATIONS ALIGN WITH WHAT OUR MATRIX SHOULD BE
+        ;FROM HERE ON OUT THE PROGRAM APPEARS TO STICK TO FP REGISTERS
+        ;PERHAPS THEY ARE FASTER FOR LOAD AND STORE OPERATIONS
+        ldr	s0, [sp, #28]; THIS IS 5.0
+        ldr	s1, [sp, #92]; THIS IS 1.O
+        ldr	s2, [sp, #24]; THIS IS 6.0
+        ldr	s3, [sp, #88]; THIS IS 0.0
+        fmul	s2, s2, s3 ; 6.0 * 0.0 STORED IN GP REGISTER 2
+        fmadd	s0, s0, s1, s2; (5.0 * 1.0) + 0.0 STORED IN FP REGISTER 0
+        ldr	s1, [sp, #20]; THIS IS 7.0
+        ldr	s2, [sp, #84]; THIS IS 0.0
+        fmadd	s0, s1, s2, s0; (7.0 * 0.0) + 5.0 ST0RED IN REGISTER 0
+        ldr	s1, [sp, #16]; THIS IS 8.0
+        ldr	s2, [sp, #80]; THIS IS 2.0
+        fmadd	s0, s1, s2, s0; (8.0 * 2.0) + 5.0 = 21.0 STORED IN REGISTER 0
+        ;HERE IS A DIFFERENCE
+        ;IT APPEARS CLANG IS GOING TO KEEP THIS VALUE IN REGISTER 0
+        ;AS OPPOSED TO WRITE IT TO THE STACK RIGHT AWAY IT WILL JUST CHILL HERE 
+        ;ARM64 HAS LOTS OF REGISTER AND TAKING ADVANTAGE OF THEM LIKE THIS 
+        ;IS A COMMON OPTIMIZATION 
+        ;THIS CONCLUDES OUR FIRST ROW, THIS PATTERN CONTINUES;
+        ldr	s1, [sp, #28]
+        ldr	s2, [sp, #76]
+        ldr	s3, [sp, #24]
+        ldr	s4, [sp, #72]
+        fmul	s3, s3, s4
+        fmadd	s1, s1, s2, s3
+        ldr	s2, [sp, #20]
+        ldr	s3, [sp, #68]
+        fmadd	s1, s2, s3, s1
+        ldr	s2, [sp, #16]
+        ldr	s3, [sp, #64]
+        fmadd	s1, s2, s3, s1
+        ldr	s2, [sp, #28]
+        ldr	s3, [sp, #60]
+        ldr	s4, [sp, #24]
+        ldr	s5, [sp, #56]
+        fmul	s4, s4, s5
+        fmadd	s2, s2, s3, s4
+        ldr	s3, [sp, #20]
+        ldr	s4, [sp, #52]
+        fmadd	s2, s3, s4, s2
+        ldr	s3, [sp, #16]
+        ldr	s4, [sp, #48]
+        fmadd	s2, s3, s4, s2
+        ldr	s3, [sp, #28]
+        ldr	s4, [sp, #44]
+        ldr	s5, [sp, #24]
+        ldr	s6, [sp, #40]
+        fmul	s5, s5, s6
+        fmadd	s3, s3, s4, s5
+        ldr	s4, [sp, #20]
+        ldr	s5, [sp, #36]
+        fmadd	s3, s4, s5, s3
+        ldr	s4, [sp, #16]
+        ldr	s5, [sp, #32]
+        fmadd	s3, s4, s5, s3
+        str	s0, [sp, #12]; HERE OUR VALUES ARE WRITTEN TO THE STACK
+        str	s1, [sp, #8]
+        str	s2, [sp, #4]
+        str	s3, [sp], #96
+        mov	w0, #0
+        ret
+        .cfi_endproc
+                                            ; -- End function
+    .subsections_via_symbols
+    </code>
+
+    I am surprised that clang found no ways to speed this up other than using integer registers and using registers 
+    a little less sparingly, this is still a very faithful generation of code and I expected better.
+
+    In order to get clang to trim code it deems unecessary we need to make a small change to the source code.
+
+    <code>
+        int main(){
+            float matrix[16];
+            volatile float v1 = 5.0;
+            volatile float v2 = 6.0;
+            volatile float v3 = 7.0;
+            volatile float v4 = 8.0;
+        
+            matrix[0] = 1.0f;    matrix[1] = 0.0f;   matrix[2] = 0.0f;    matrix[3] = 2.0;
+            matrix[4] = 0.0f;    matrix[5] = 1.0f;   matrix[6] = 0.0f;    matrix[7] = 3.0;
+            matrix[8] = 0.0f;    matrix[9] = 0.0f;   matrix[10] = 1.0f;   matrix[11] = 4.0;
+            matrix[12] = 0.0f;   matrix[13] = 0.0f;  matrix[14] = 0.0f;   matrix[15] = 1.0f;
+            float x = v1 * matrix[0] + v2 * matrix[1] + v3 * matrix[2] + v4 * matrix[3];
+            float y = v1 * matrix[4] + v2 * matrix[5] + v3 * matrix[6] + v4 * matrix[7];
+            float z = v1 * matrix[8] + v2 * matrix[9] + v3 * matrix[10] + v4 * matrix[11];
+            float w = v1 * matrix[12] + v2 * matrix[13] + v3 * matrix[14] + v4 * matrix[15];
+            volatile float xr = x;
+            volatile float xy = y;
+            volatile float xz = z;
+            volatile float xw = w;
+        }
+    </code>
+
+    the difference is the volatile keyword has been removed from the matrix array, this will allow it to remove
+    values, I'm keeping on the other volatile keywords to prevent clang from deleting my program altogether.
+
+    <code>
+        .section	__TEXT,__text,regular,pure_instructions
+        .build_version macos, 14, 0	sdk_version 14, 5
+        .globl	_main                           ; -- Begin function main
+        .p2align	2
+    _main:                                  ; @main
+        .cfi_startproc
+    ; %bb.0:
+        sub	sp, sp, #32 ;WOAH, THATS WAY LESS, WE STARTED AT A STACK FRAME OF 144 BYTES
+        .cfi_def_cfa_offset 32
+        ;OUR VECTOR VALUES HAVE BEEN PLACED USING INTEGER REGISTERS
+        mov	w8, #1084227584; THIS IS 5.0
+        str	w8, [sp, #28]
+        mov	w8, #1086324736; THIS IS 6.0
+        str	w8, [sp, #24]
+        mov	w8, #1088421888; THIS IS 7.0
+        str	w8, [sp, #20]
+        mov	w8, #1090519040; THIS IS 8.0
+        str	w8, [sp, #16]
+        ldr	s0, [sp, #28]; THIS IS 5.0 IN FP REGISTER 0
+        ldr	s1, [sp, #24]; THIS IS 6.0 IN FP REGISTER 1
+        movi	d2, #0000000000000000; 0.0 IS MOVED INTO REGISTER 2, LOOKS LIKE ITS GONNA STAY HERE THE WHOLE TIME
+        fmul	s1, s1, s2; 6.0 * 0.0 = 0.0
+        fadd	s0, s0, s1; 5.0 + 0.0 = 5.0
+        ldr	s1, [sp, #20]
+        fmadd	s0, s1, s2, s0; (0.0 * 0.0) + 5.0 = 5.0
+        ldr	s1, [sp, #16]; THIS IS 8.0
+        fmov	s3, #2.00000000
+        fmadd	s0, s1, s3, s0 (8.0 * 2.0) + 5.0 = 21.0
+        ; THIS VALUE STAYS IN THIS REGISTER FOR THE REMAINDER OF THE PROGRAM
+        ; IT APPEARS THE MAIN DIFFERENCE IS THAT THE MATRIX VALUES HAVE BEEN HARDCODE
+        ; THIS WAS NOT MY INTENTION
+        ; THE PROGRAM CONTINUES WITH THIS SAME PATTERN
+        ldr	s1, [sp, #28]
+        ldr	s3, [sp, #24]
+        fmadd	s1, s1, s2, s3
+        ldr	s3, [sp, #20]
+        fmadd	s1, s3, s2, s1
+        ldr	s3, [sp, #16]
+        fmov	s4, #3.00000000
+        fmadd	s1, s3, s4, s1
+        ldr	s3, [sp, #28]
+        ldr	s4, [sp, #24]
+        fmul	s4, s4, s2
+        fmadd	s3, s3, s2, s4
+        ldr	s4, [sp, #20]
+        fadd	s3, s4, s3
+        ldr	s4, [sp, #16]
+        fmov	s5, #4.00000000
+        fmadd	s3, s4, s5, s3
+        ldr	s4, [sp, #28]
+        ldr	s5, [sp, #24]
+        fmul	s5, s5, s2
+        fmadd	s4, s4, s2, s5
+        ldr	s5, [sp, #20]
+        fmadd	s2, s5, s2, s4
+        ldr	s4, [sp, #16]
+        fadd	s2, s4, s2
+        ;BELOW THE VALUES ARE STORED ON THE STACK
+        str	s0, [sp, #12]
+        str	s1, [sp, #8]
+        str	s3, [sp, #4]
+        str	s2, [sp], #32
+        mov	w0, #0
+        ret
+        .cfi_endproc
+                                            ; -- End function
+    .subsections_via_symbols
+    
+    </code>
+
+    All in all it appears that either clang is not able to remove redundant operations or I am unable to create
+    the circumstances in which it will, in all cases our source code was pretty faithfully followed. It would stand to 
+    reason that using either quaternions or deconstructed matrices will provide more computational efficiency, I wrote
+    this article and analyzed the assembly simultaneously so I am pretty dissapointed by this outcome. All this being 
+    discovered the gains provided by using more computationally efficient transforms would be marginal at best, that 
+    being said marginal gains can grow pretty rapidly when larger scenes or models are rendered, as each transform gets 
+    performed on each triangle, in this demo the larger forest model is about 11,000 triangles, this is on the low end 
+    compared to many modern 3D models.
+
+    
+
+</pre>

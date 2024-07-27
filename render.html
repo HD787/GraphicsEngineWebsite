@@ -39,7 +39,7 @@
         
             <div id="transforms" class="hidden"> 
                 <h2>Transforms</h2>
-                <href>Homogenous Matrices</href>
+                <p><a href="docs/matrices.html" target="_blank">Homogeneous Matrices</a></p>
                 <div id="matrixInput">
                     <div>
                         <input type="number" value="1">
@@ -70,7 +70,7 @@
                 </div>
                 <br>
                 <div>
-                    <h3>Explode Model</h3>
+                    <p><a href="docs/explode.html" target="_blank">Explode Model</a></p>
                     <input type="range" class="slider" min="-2.0" max="2.0" value="0.0" step="0.1" oninput="submitNewExplodeScalar(this.value)">
                     <span id="explodeScalarValue">0.0</span>
                 </div>
@@ -79,10 +79,10 @@
             <div id="rasterization" class="hidden">
                 <h2>Rasterization</h2>
                 <div>
-                    <h3>Lighting Vector</h3>
-                    <input id="x">
-                    <input id="y">
-                    <input id="z">
+                    <p><a href="docs/lighting.html" target="_blank">Lighting Vector</a></p>
+                    <input id="x" value="0">
+                    <input id="y" value="0">
+                    <input id="z" value="-1">
                     <button onClick="submitNewLightVector(
                         document.getElementById('x').value,
                         document.getElementById('y').value,
@@ -90,10 +90,10 @@
                         Update Vector</button>
                 </div>
                 <div>
-                    <h3>RGB values</h3>
-                    <input id="r">
-                    <input id="g">
-                    <input id="b">
+                    <p><a href="docs/colors.html" target="_blank">RGB Values</a></p>
+                    <input id="r" value="127">
+                    <input id="g" value="127">
+                    <input id="b" value="127">
                     <button 
                         onClick="submitNewColor( 
                         document.getElementById('r').value,

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<h1>Homogeneous Matrices and Coordinate System</h1>
+<pre style="white-space: pre-wrap;">
+    TL;DR the upper 3 slots of the right-most column in the matrix are used for translation or moving the the model around,
+    adding values here is equivalent to using WASDCSPACE to adjust the models position. the bottom row is used for altering 
+    W coordinate, this will affect the translation speed and the perspective of the model in likely undesirable ways, it 
+    is probable this will damage the rasterizers ability to perform accurate depth testing resulting in visual artifacts.
+
+    Homogeneous matrices are used to perform transformations on vertex data, this is the basis for moving models around,
+    performing rotations, and applying perspective. The term Homogeneous refers to this systems ability to combine linear
+    affine and non-linear operations all into the framework of linear algebra.
+
+    3D coordinates traditionally use an X, Y and Z value to describe their location in relation to each axis, and each
+    coordinate adds a dimension, using only an X coordinate we can represent a line, using an X and Y we can represent
+    a plane and with an X, Y and Z we can represent 3D space. The Homogeneous coordinate system uses an additional value
+    referred to as the W coordinate, this however, does not represent a higher dimension. The goal of the homoegeneous 
+    coordinate system is to allow operations that exist outside of the scope of linear algebra, namely translation and 
+    projection.
+
+    The W coordinate is initially assumed to be 1.0, this value does not hold any significance but rather has valuable 
+    utility in the existing framework of linear algebra, which is being extended here.
+
+    Given the homogeneous coordinates [X, Y, Z, W], the translation operation using a homogeneous matrix is as follows:
+
+    [1, 0, 0, tX]
+    [0, 1, 0, tY]
+    [0, 0, 1, tZ]
+    [0, 0, 0, 1]
+
+    Multiplying this matrix by the coordinates results in:
+
+    X*1 + Y*0 + Z*0 + W*tX = X + tX = rX
+    X*0 + Y*1 + Z*0 + W*tY = Y + tY = rY
+    X*0 + Y*0 + Z*1 + W*tZ = Z + tZ = rZ
+    X*0 + Y*0 + Z*0 + W*1 = W = rW
+
+    The resulting coordinates are [rX, rY, rZ, rW].
+
+    as you can see the affect of the translation matrix is equivalent to adding the desired translation to the corresponding
+    coordinate (one might think this is more computationally efficient, and they may be right, see my analysis here:
+    <a href="matricesInAsm.html">compiler optimizations of matrix operations</a>, however, there is value in maintaining consistent methodology in operations
+    in a codebase)
+
+    Translation is not considered a linear transformation because the origin would not be preserved, it also would be 
+    translated, translation is considered an affine transformation, meaning ratios and paralel lines are preserved 
+    (keep in mind all linear operations are also affine, not all affine operations are linear).
+
+    the last other use of the W coordinate is in the perspective projection matrix, which is neither linear nor affine
+    as it will not preserve the origin or parrelism and ratios.
+
+    The perspective projection is significantly more complex than any other transform that occurs and it makes the most
+    use of the W coordinate.
+
+    the goal of the perspective projection matrix is to create the illusion of human perspective in a scene, this mainly 
+    works by altering the vector space to form a frustum. A frustum is a shape, best thought of as a truncated pyramid, 
+    think of a pyramid with the tip removed, this idea approximates a human's field of view, meaning objects more on the 
+    peripherals of the view are more likely to be included the further away they are. in the demo try moving the model 
+    to the left or right as you move it further away, you'll see that the object can stay in view even if moved greatly 
+    to one side as long as it is moved back enough, this is comparable to how humans perceive objects.
+    
+    the matrix is as follows:
+
+    FOV = field of view, or the width of the viewport, expressed as an angle.
+    AR = aspect ratio, or the ratio between the height and width of the scene.
+    FP = far plane, or the furthest renderable distance
+    NP = near plane, or the nearest renderable distance
+
+    [(1.0 / tan(FOV / 2.0f)) - AR, 0,                       0,                  0]
+    [0,                            (1.0 / tan(FOV / 2.0f)), 0,                  0]
+    [0,                            0,                       FP + NP/(FP - NP), -2 * (FP * NP) / (FP - NP)]
+    [0,                            0,                       1,                  0]
+
+    Deriving this matrix is pretty heavy stuff and more than what I want to get into here, There are also several
+    variations of this matrix with similar outputs. <a href="https://www.youtube.com/watch?v=EqNcqBdrNyI">this guy offers a good explanation.</a>
+
+    What I want to direct your attention to is the last row if this matrix which contains a 1 in 3rd column,
+    the result of this is that the resulting vectors W value will be an unaltered Z coordinate. Keep in mind that
+    this is the last transformation to occur in the graphics engine. This is where we really extend the framework of
+    linear algebra beyond what it does traditionally. 
+
+    This unaltered Z coordinate is used for "perspective division", where we divide our final X, Y and Z coordinates 
+    by our W coordinate (which is the pre-perspective Z coordinate). This operation results in objects getting scaled
+    based on their depth, making further away objects smaller, this is the final step in creating an illusion of perspective
+    and making the scene approximate human perception.
+
+    As you can see the W coordinate provides a valuable extension to the framework of linear algebra, this demo offers
+    the ability to mess with it by submitting matrices with values in the last row or column, I encourage you to mess with
+    this but it will likely provide undesirable results. the 9 values that would form a standard 3x3 matrix can be used
+    for some transforms that will likely be more fun and exciting.
+</pre>

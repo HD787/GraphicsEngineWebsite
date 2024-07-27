@@ -48,6 +48,7 @@ function transform(){
 }
 
 function changeMenus(){
+    event.target.blur()
     const menuIds = ["controls", "transforms", "rasterization"];
     menuIds.forEach(id => {
         document.getElementById(id).classList.add("hidden");
@@ -56,12 +57,14 @@ function changeMenus(){
 }
 
 function submitNewExplodeScalar(scalar){
+    event.target.blur()
     updateExplodeScalar(wcPtr, scalar);
     render();
     document.getElementById("explodeScalarValue").textContent = scalar.toString();
 }
 
 function submitNewColor(r, g, b){
+    event.target.blur()
     r = clampUnsignedChar(r);
     g = clampUnsignedChar(g);
     b = clampUnsignedChar(b);
@@ -70,11 +73,13 @@ function submitNewColor(r, g, b){
 }
 
 function submitNewLightVector(x, y, z){
+    event.target.blur()
     updateLightVector(wcPtr, x, y, z)
     render();
 }
 
 function submitNewMatrix(){
+    event.target.blur()
     const matrixInputs = document.querySelectorAll('#matrixInput input[type="number"]');
     const matrix = Array.from(matrixInputs).map(input => parseFloat(input.value));
     addMatrixSlot(wcPtr)
@@ -91,6 +96,7 @@ function clampUnsignedChar(value){
 }
 
 function changeRenderMode(){
+    event.target.blur()
     if(renderMode == 0){
         renderMode = 1;
         document.getElementById("renderWireFrame").innerText = "Enable Scanline"

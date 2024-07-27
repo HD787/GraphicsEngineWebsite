@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<h1>Normal Vectors</h1>
+<pre style="white-space: pre-wrap;">
+    Normal vectors play a very important role in graphics operations. The basic building block of a 3D model,
+    especially in this engine, is the triangle. As other shapes can be used triangles are ideal because they 
+    always form a plane, as a result of this modern hardware has been designed to be especially adept at performing
+    triangle operations. Normal vectors are vectors that are perpendicular to the planes formed by the triangle, and 
+    every triangle has an associated normal vector. These vectors are incredibly useful in a variety of different
+    operation, see <a href="lighting.html">Lighting Vectors</a> and <a href="explode.html">Exploding Models</a>.
+
+    The normal vector is fairly straightforward to produce, by taking two vertices on each triangle, the resulting 
+    cross product will be the normal vector.
+
+    The formula for the cross product is as follows:
+
+    given two vectors representing the vertices(keep in mind the <a href="matrices.html">homogeneous W coordinate is excluded here</a>):
+
+    [X1, Y1, Z1] and [X2, Y2, Z2]
+
+    the normal vector [XN, YN, ZN] is calculated like so:
+
+    XN = (Y1 - Z2) * (Z1 - Y2)
+    YN = (Z1 - X2) * (X1 - Z2)
+    ZN = (X1 - Y2) * (Y1 - X2)
+
+    Keep in mind that the cross product only maintains its useful properties in 3 Dimensions<a href="https://en.wikipedia.org/wiki/Seven-dimensional_cross_product">(and 7????)</a>,
+    meaning there is no 2D equivalent.
+
+</pre>

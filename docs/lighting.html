@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<h1>Lighting</h1>
+<pre style="white-space: pre-wrap;">
+    Lighting implementations vary in complexity, this is one of the simplest. The first step is to normalize the 
+    lighting vector, meaning without altering the direction of the vector making it so it has a magnitude of 1.
+    In this demo if you enter a non-normalized vector it is automatically normalized. The operation to determine if 
+    how directly a triangle is facing in the direction of this vector to perform a dot product with the normalized 
+    lighting vector and a normalized <a href="normals.html">normal vector</a>. The result of this operation is a 
+    single value between -1 and 1, a result of 1 means that the vectors are antiparallel, or facing eachother directly,
+    indicating most direct light, and a result of -1 means they are opposite, facing directly apart, indicating no light.
+
+    The result of the dot product is then incremented by 1, meaning it is now in a range of 0 to 2. The final step 
+    is to multiply this value by all of the <a href="colors.html">RGB Values</a>. meaning if a triangle is faced opposite
+    it becomes black with RGB values of 0, 0 and 0. If the triangle is antiparallel the RGB values are doubled, which increases
+    the brightness.
+
+    The operations for this are as follows with light vector [l1, l2, l3] and normal vector [n1, n2, n3]
+
+    dot product:
+
+    result = (l1 * n1) + (l2 * n2) + (l3 * n3)
+
+    RGB values are altered like so:
+
+    R = R * (result + 1)
+    G = G * (result + 1)
+    B = B * (result + 1)
+
+    note: RGB values are unsigned 8-bit integers meaning they cannot represent values greater than 255 or less than 0,
+    meaning the effectiveness of this operation may be limited as starting values approach these edge values.
+    also values are clamped to avoid the dangers of overflow.
+</pre>
