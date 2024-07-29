@@ -241,7 +241,7 @@
         ldr	s1, [sp, #92]; THIS IS 1.O
         ldr	s2, [sp, #24]; THIS IS 6.0
         ldr	s3, [sp, #88]; THIS IS 0.0
-        fmul	s2, s2, s3 ; 6.0 * 0.0 STORED IN GP REGISTER 2
+        fmul	s2, s2, s3 ; 6.0 * 0.0 STORED IN FP REGISTER 2
         fmadd	s0, s0, s1, s2; (5.0 * 1.0) + 0.0 STORED IN FP REGISTER 0
         ldr	s1, [sp, #20]; THIS IS 7.0
         ldr	s2, [sp, #84]; THIS IS 0.0
@@ -252,7 +252,7 @@
         ;HERE IS A DIFFERENCE
         ;IT APPEARS CLANG IS GOING TO KEEP THIS VALUE IN REGISTER 0
         ;AS OPPOSED TO WRITE IT TO THE STACK RIGHT AWAY IT WILL JUST CHILL HERE 
-        ;ARM64 HAS LOTS OF REGISTER AND TAKING ADVANTAGE OF THEM LIKE THIS 
+        ;ARM64 HAS LOTS OF REGISTERS AND TAKING ADVANTAGE OF THEM LIKE THIS 
         ;IS A COMMON OPTIMIZATION 
         ;THIS CONCLUDES OUR FIRST ROW, THIS PATTERN CONTINUES;
         ldr	s1, [sp, #28]
@@ -363,8 +363,8 @@
         fmov	s3, #2.00000000
         fmadd	s0, s1, s3, s0 (8.0 * 2.0) + 5.0 = 21.0
         ; THIS VALUE STAYS IN THIS REGISTER FOR THE REMAINDER OF THE PROGRAM
-        ; IT APPEARS THE MAIN DIFFERENCE IS THAT THE MATRIX VALUES HAVE BEEN HARDCODE
-        ; THIS WAS NOT MY INTENTION
+        ; IT APPEARS THE MAIN DIFFERENCE IS THAT THE MATRIX VALUES HAVE BEEN HARDCODED
+        ; THIS WAS NOT MY INTENTION, I WAS HOPING CLANG WOULD OMIT MULTIPLICATIONS BY 0
         ; THE PROGRAM CONTINUES WITH THIS SAME PATTERN
         ldr	s1, [sp, #28]
         ldr	s3, [sp, #24]
@@ -406,7 +406,7 @@
 
     All in all it appears that either clang is not able to remove redundant operations or I am unable to create
     the circumstances in which it will, in all cases our source code was pretty faithfully followed. It would stand to 
-    reason that using either quaternions or deconstructed matrices will provide more computational efficiency, I wrote
+    reason that using either quaternions or deconstructed matrices will provide more computationally efficiency, I wrote
     this article and analyzed the assembly simultaneously so I am pretty dissapointed by this outcome. All this being 
     discovered the gains provided by using more computationally efficient transforms would be marginal at best, that 
     being said marginal gains can grow pretty rapidly when larger scenes or models are rendered, as each transform gets 
