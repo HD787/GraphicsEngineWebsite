@@ -7,7 +7,7 @@
     It is true that matrices introduce lots of operations, many of which are inconsequential, and 
     it begs the question on whether the consistency in approach they offer is worth it compared to 
     using alternatives, such as deconstructing them to essential operations or something like quaternions.
-    Here I will analyze whether clang, the compiler used in this demo can effectively reduce the amount of operations
+    Here I will analyze whether Clang, the compiler used in this demo, can effectively reduce the amount of operations
     used in its output, which will be in ARM64.
 
     To demonstrate this idea i've prepared this sample code to demonstrate the compilers ability to optimize.
@@ -212,7 +212,7 @@
         str	w8, [sp, #20]
         mov	w8, #1090519040 ;THIS IS 8.0
         str	w8, [sp, #16]
-        ;THE str COMMANDS TELL US THESE VALUES WERE STORED IN OFFSETS 16 =28
+        ;THE str COMMANDS TELL US THESE VALUES WERE STORED IN OFFSETS 16-28
         mov	w8, #1065353216 ;THIS IS 1.0
         str	w8, [sp, #92]
         str	wzr, [sp, #88] ;wzr IS THE ZERO REGISTER, IT IS A SPECIAL REGISTER THAT DOESNT ACTUALLY HAVE ANY WIDTH
@@ -236,7 +236,7 @@
         str	w8, [sp, #32]
         ;THE PREVIOUS 16 str OPERATIONS ALIGN WITH WHAT OUR MATRIX SHOULD BE
         ;FROM HERE ON OUT THE PROGRAM APPEARS TO STICK TO FP REGISTERS
-        ;PERHAPS THEY ARE FASTER FOR LOAD AND STORE OPERATIONS
+        ;PERHAPS GENERAL PURPOSE REGISTERS ARE FASTER FOR LOAD AND STORE OPERATIONS
         ldr	s0, [sp, #28]; THIS IS 5.0
         ldr	s1, [sp, #92]; THIS IS 1.O
         ldr	s2, [sp, #24]; THIS IS 6.0
