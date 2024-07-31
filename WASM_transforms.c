@@ -26,8 +26,7 @@ void transform(renderContext* rc, transformSpec* ts, scene* sc, vertexBuffer* vb
         temp = addVectors(temp, scaleVector(normTempH, ts->explodeScalar));
         // temp = addVectors(temp, zeroVec);
         
-        vecByMatrix4x4(&temp, rotationMatrixX);
-        
+        vecByMatrix4x4(&temp, rotationMatrixX); 
         vecByMatrix4x4(&temp, rotationMatrixY);
         vecByMatrix4x4(&temp, rotationMatrixZ);
         
