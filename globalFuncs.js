@@ -72,6 +72,13 @@ function submitNewColor(r, g, b){
     render();
 }
 
+function randomizeColors(){
+    console.log("here");
+    event.target.blur();
+    randomizeColorBuffer(wcPtr);
+    render();
+}
+
 function submitNewLightVector(x, y, z){
     event.target.blur()
     updateLightVector(wcPtr, x, y, z)

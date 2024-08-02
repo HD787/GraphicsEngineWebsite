@@ -103,7 +103,9 @@
                         Change Color</button>
                 </div>
                 <br>
-                <button id="renderWireFrame" onClick="changeRenderMode()">Disable Scanline</button>
+                <div><button id="renderWireFrame" onClick="changeRenderMode()">Disable Scanline</button></div>
+                <br>
+                <div><button id="renderRandomColors" onClick="randomizeColors()">Randomize All Colors</button></div>
             </div>            
 
         </div> 
@@ -136,6 +138,7 @@
             updateLightVector = Module._updateLightVector;
             addMatrixValue = Module._addMatrixValue;
             addMatrixSlot = Module._addMatrixSlot;
+            randomizeColorBuffer = Module._randomizeColorBuffer;
             //const misc = Module._misc;
 
             wcPtr = initialize(canvas.width, canvas.height);

@@ -1,4 +1,4 @@
-//emcc -o WASM_forestDemo.js WASM_forestDemo.c -s EXPORTED_FUNCTIONS='["_initialize", "_renderPass", "_getFrameBuffer", "_deleteWebContext", "_initializeFromObj", "_renderPassWireFrame", "_updateExplodeScalar", "_updateColorBuffer", "_updateLightVector", "_addMatrixValue", "_addMatrixSlot", "_misc"]' -s --preload-file forestPondFIXED.obj
+//emcc -o WASM_forestDemo.js WASM_forestDemo.c -s EXPORTED_FUNCTIONS='["_initialize", "_renderPass", "_getFrameBuffer", "_deleteWebContext", "_initializeFromObj", "_renderPassWireFrame", "_updateExplodeScalar", "_updateColorBuffer", "_updateLightVector", "_addMatrixValue", "_addMatrixSlot","_randomizeColorBuffer", "_misc"]' -s --preload-file forestPondFIXED.obj
 #include <string.h>
 #include <emscripten.h>
 #include "GraphicsEngine/raster/rasterizer.c"
@@ -75,8 +75,6 @@ webContext* initializeFromObj(int height, int width){
     return wc;
 }
 
-
-
 EMSCRIPTEN_KEEPALIVE
 void renderPass(webContext* wc, float translateX, float translateY, float translateZ, float rotateX, float rotateY, float rotateZ){
     cleanRenderContext_RGBA(wc->rc);
@@ -106,6 +104,15 @@ void renderPassWireFrame(webContext* wc, float translateX, float translateY, flo
 EMSCRIPTEN_KEEPALIVE
 void updateExplodeScalar(webContext* wc, float scalar){
     wc->ts->explodeScalar = scalar;
+}
+
+EMSCRIPTEN_KEEPALIVE
+void randomizeColorBuffer(webContext* wc){
+    for(int i = 0; i < wc->sc->meshes[0]->vb->length; i += 3){
+        wc->sc->meshes[0]->cb->inputColors[i] = rand() % 255;
+        wc->sc->meshes[0]->cb->inputColors[i + 1] = rand() % 255;
+        wc->sc->meshes[0]->cb->inputColors[i + 2] = rand() % 255;
+    }
 }
 
 EMSCRIPTEN_KEEPALIVE

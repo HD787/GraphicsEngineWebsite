@@ -39,7 +39,7 @@ if (ENVIRONMENT_IS_NODE) {
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
-// include: /var/folders/ff/njg_fpgd27743s3g7cd4315w0000gn/T/tmpub2qoval.js
+// include: /var/folders/ff/njg_fpgd27743s3g7cd4315w0000gn/T/tmpkqlxth8x.js
 
   if (!Module.expectedDataFileDownloads) {
     Module.expectedDataFileDownloads = 0;
@@ -219,21 +219,21 @@ var REMOTE_PACKAGE_SIZE = metadata['remote_package_size'];
 
   })();
 
-// end include: /var/folders/ff/njg_fpgd27743s3g7cd4315w0000gn/T/tmpub2qoval.js
-// include: /var/folders/ff/njg_fpgd27743s3g7cd4315w0000gn/T/tmpmywy2na5.js
+// end include: /var/folders/ff/njg_fpgd27743s3g7cd4315w0000gn/T/tmpkqlxth8x.js
+// include: /var/folders/ff/njg_fpgd27743s3g7cd4315w0000gn/T/tmpum5zdcm5.js
 
     // All the pre-js content up to here must remain later on, we need to run
     // it.
     if (Module['$ww'] || (typeof ENVIRONMENT_IS_PTHREAD != 'undefined' && ENVIRONMENT_IS_PTHREAD)) Module['preRun'] = [];
     var necessaryPreJSTasks = Module['preRun'].slice();
-  // end include: /var/folders/ff/njg_fpgd27743s3g7cd4315w0000gn/T/tmpmywy2na5.js
-// include: /var/folders/ff/njg_fpgd27743s3g7cd4315w0000gn/T/tmpkeckttoq.js
+  // end include: /var/folders/ff/njg_fpgd27743s3g7cd4315w0000gn/T/tmpum5zdcm5.js
+// include: /var/folders/ff/njg_fpgd27743s3g7cd4315w0000gn/T/tmpkpsaxfr7.js
 
     if (!Module['preRun']) throw 'Module.preRun should exist because file support used it; did a pre-js delete it?';
     necessaryPreJSTasks.forEach((task) => {
       if (Module['preRun'].indexOf(task) < 0) throw 'All preRun tasks that exist before user pre-js code should remain after; did you replace Module or modify Module.preRun?';
     });
-  // end include: /var/folders/ff/njg_fpgd27743s3g7cd4315w0000gn/T/tmpkeckttoq.js
+  // end include: /var/folders/ff/njg_fpgd27743s3g7cd4315w0000gn/T/tmpkpsaxfr7.js
 
 
 // Sometimes an existing Module object exists with properties
@@ -4366,6 +4366,7 @@ var _initializeFromObj = Module['_initializeFromObj'] = createExportWrapper('ini
 var _renderPass = Module['_renderPass'] = createExportWrapper('renderPass', 7);
 var _renderPassWireFrame = Module['_renderPassWireFrame'] = createExportWrapper('renderPassWireFrame', 7);
 var _updateExplodeScalar = Module['_updateExplodeScalar'] = createExportWrapper('updateExplodeScalar', 2);
+var _randomizeColorBuffer = Module['_randomizeColorBuffer'] = createExportWrapper('randomizeColorBuffer', 1);
 var _updateColorBuffer = Module['_updateColorBuffer'] = createExportWrapper('updateColorBuffer', 4);
 var _updateLightVector = Module['_updateLightVector'] = createExportWrapper('updateLightVector', 4);
 var _getFrameBuffer = Module['_getFrameBuffer'] = createExportWrapper('getFrameBuffer', 1);
