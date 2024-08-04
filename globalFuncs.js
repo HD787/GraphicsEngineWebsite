@@ -119,7 +119,6 @@ function changeRenderMode(){
 
 function render(){
     if(renderMode === 1){
-        console.log('here');
         renderPassWireFrame(wcPtr, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
         ctx.putImageData(imageData, 0, 0);
         return;

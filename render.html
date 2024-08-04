@@ -165,7 +165,6 @@
             wcPtr = initializeFromObj(canvas.width, canvas.height);
             const pixelDataPtr = getFrameBuffer(wcPtr);
             const pixelData = new Uint8ClampedArray(Module.HEAPU8.buffer, pixelDataPtr, canvas.width * canvas.height * 4);
-            renderPass(wcPtr, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
             render()
         });
 
