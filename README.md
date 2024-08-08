@@ -1,4 +1,4 @@
-This is currently being hosted at (henryderrick.com)[http://henryderrick.com].
+This is currently being hosted at [http://henryderrick.com](henryderrick.com).
 
 it can also be ran by cloning this repository, running a web server with the cloned directory as the root, and navigate to render.html.
 
