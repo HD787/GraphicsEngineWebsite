@@ -164,7 +164,7 @@ int misc(webContext* wc){
     return wc->sc->meshes[0]->vb->length;
 }
 
-
+//for debugging purposes
 // int main(){
 //     webContext* wc = initializeFromObj(800, 600);
 //     renderPass(wc, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);

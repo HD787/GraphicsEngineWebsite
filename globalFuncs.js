@@ -49,7 +49,7 @@ function transform(){
 
 function changeMenus(){
     event.target.blur()
-    const menuIds = ["controls", "transforms", "rasterization"];
+    const menuIds = ["controls", "transforms", "rasterization", "mesh"];
     menuIds.forEach(id => {
         document.getElementById(id).classList.add("hidden");
     });
