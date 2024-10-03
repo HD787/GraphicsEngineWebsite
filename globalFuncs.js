@@ -106,13 +106,13 @@ function changeRenderMode(){
     event.target.blur()
     if(renderMode == 0){
         renderMode = 1;
-        document.getElementById("renderWireFrame").innerText = "Enable Scanline"
+        document.getElementById("renderWireFrame").innerText = "Enable Polygon Filling"
         render()
         return;
     }
     if(renderMode == 1){
         renderMode = 0;
-        document.getElementById("renderWireFrame").innerText = "Disable Scanline"
+        document.getElementById("renderWireFrame").innerText = "Disable Polygon Filling"
     }
     render();
 }
