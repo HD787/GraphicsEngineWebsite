@@ -160,17 +160,11 @@
 
         window.onerror = function (message, source, lineno, colno, error) {
             console.error("Error occurred:", message);
-            if (reloadCount < 3) {
-                localStorage.setItem('reloadCount', ++reloadCount);
-                setTimeout(function() {
-                    window.location.reload();
-                }, 2000);
-            } else {
-                console.error("Page reload limit reached.");
-                localStorage.removeItem('reloadCount');
-            }
+            setTimeout(function() {
+                window.location.reload();
+            }, 2000);
         };
-        
+
         window.addEventListener('keydown', (event) => {
             keyStates[event.code] = true;
             transform();
