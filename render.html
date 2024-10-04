@@ -167,9 +167,13 @@
                 }, 2000);
             } else {
                 console.error("Page reload limit reached.");
-                localStorage.removeItem('reloadCount');  // Reset for future sessions
+                localStorage.removeItem('reloadCount');
             }
         };
+
+        window.addEventListener('beforeunload', function () {
+            localStorage.clear();
+        });
 
         window.addEventListener('keydown', (event) => {
             keyStates[event.code] = true;
