@@ -170,11 +170,7 @@
                 localStorage.removeItem('reloadCount');
             }
         };
-
-        window.addEventListener('beforeunload', function () {
-            localStorage.clear();
-        });
-
+        
         window.addEventListener('keydown', (event) => {
             keyStates[event.code] = true;
             transform();
